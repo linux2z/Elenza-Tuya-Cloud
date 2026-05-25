@@ -1,0 +1,59 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  machines  Machine[]
+}
+
+model Machine {
+  id        String   @id @default(uuid())
+  name      String
+  model     String
+  status    String   @default("Offline")
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  telemetry TelemetryLog[]
+  recipes   Recipe[]
+}
+
+model Recipe {
+  id          String   @id @default(uuid())
+  name        String
+  coffeeBeans Int      // in grams
+  waterVolume Int      // in ml
+  temperature Int      // in Celsius
+  pressure    Float    // in bar
+  milkVolume  Int?     // in ml
+  machineId   String
+  machine     Machine  @relation(fields: [machineId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model TelemetryLog {
+  id          String   @id @default(uuid())
+  machineId   String
+  machine     Machine  @relation(fields: [machineId], references: [id])
+  temperature Float
+  pressure    Float
+  flowRate    Float
+  weight      Float
+  recordedAt  DateTime @default(now())
+}
